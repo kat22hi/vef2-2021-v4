@@ -4,47 +4,6 @@ import { init, createPopup, clearMarkers } from './lib/map';
 
 let map;
 
-function addLoadingToDOM() {
-  const loading = document.querySelector('.loading');
-  if (loading.classList.contains('hidden')) {
-    loading.classList.toggle('hidden');
-  }
-}
-
-function removeLoadingFromDOM() {
-  const loading = document.querySelector('.loading');
-  loading.classList.add('hidden');
-}
-
-function addLoadingErrorToDOM() {
-  const loading = document.querySelector('.loading');
-  const parent = loading.parentNode;
-
-  parent.appendChild(
-    element('p', { class: 'error' }, null, 'Villa við að sækja gögn'),
-  );
-}
-
-function clearDOM() {
-  clearMarkers();
-  const h1 = document.querySelector('h1');
-  while (h1.firstChild) {
-    h1.removeChild(h1.firstChild);
-  }
-  const cache = document.querySelector('.cache');
-  while (cache.firstChild) {
-    cache.removeChild(cache.firstChild);
-  }
-  const earthquakes = document.querySelector('.earthquakes');
-  while (earthquakes.firstChild) {
-    earthquakes.removeChild(earthquakes.firstChild);
-  }
-  const error = document.querySelector('.error');
-  if (error) {
-    error.parentNode.removeChild(error);
-  }
-}
-
 function addEarthquakesToDOM(earthquakes, pageTitle) {
   const h1 = document.querySelector('h1');
   const cache = document.querySelector('.cache');
@@ -92,7 +51,39 @@ function addEarthquakesToDOM(earthquakes, pageTitle) {
   });
 }
 
-async function overrideLinks() {
+function LoadToDOM() {
+  const loading = document.querySelector('.loading');
+  if (loading.classList.contains('hidden')) {
+    loading.classList.toggle('hidden');
+  }
+}
+
+function rmLoadingDOM() {
+  const loading = document.querySelector('.loading');
+  loading.classList.add('hidden');
+}
+
+function rmDOM() {
+  clearMarkers();
+  const h1 = document.querySelector('h1');
+  while (h1.firstChild) {
+    h1.removeChild(h1.firstChild);
+  }
+  const cache = document.querySelector('.cache');
+  while (cache.firstChild) {
+    cache.removeChild(cache.firstChild);
+  }
+  const quakes = document.querySelector('.earthquakes');
+  while (quakes.firstChild) {
+    quakes.removeChild(quakes.firstChild);
+  }
+  const error = document.querySelector('.error');
+  if (error) {
+    error.parentNode.removeChild(error);
+  }
+}
+
+async function LinkOVR() {
   const nav = document.querySelector('.nav');
   const lists = nav.querySelectorAll('.list');
 
@@ -103,17 +94,16 @@ async function overrideLinks() {
     links.forEach((link) => {
       link.addEventListener('click', async (event) => {
         event.preventDefault();
-        clearDOM();
-        addLoadingToDOM();
+        rmDOM();
+        LoadToDOM();
         const url = new URL(event.target.href);
         const urlParams = url.searchParams;
         const period = urlParams.has('period') ? urlParams.get('period') : 'hour';
         const type = urlParams.has('type') ? urlParams.get('type') : 'all';
 
         const earthquakes = await fetchEarthquakes(period, type);
-        removeLoadingFromDOM();
+        rmLoadingDOM();
         if (!earthquakes) {
-          addLoadingErrorToDOM();
           return;
         }
         addEarthquakesToDOM(earthquakes, `${event.target.innerText}, ${h2.textContent.toLowerCase()}`);
@@ -125,19 +115,13 @@ async function overrideLinks() {
 document.addEventListener('DOMContentLoaded', async () => {
 
   map = document.querySelector('.map');
-
   init(map);
-
-  addLoadingToDOM();
-
-  await overrideLinks();
-
+  LoadToDOM();
+  await LinkOVR();
   const earthquakes = await fetchEarthquakes('hour', 'all');
-
-  removeLoadingFromDOM();
-
+  rmLoadingDOM();
+  
   if (!earthquakes) {
-    addLoadingErrorToDOM();
     return;
   }
   addEarthquakesToDOM(earthquakes, 'Allir jarðskjálftar, seinustu klukkustund');

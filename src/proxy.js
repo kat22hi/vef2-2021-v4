@@ -16,7 +16,6 @@ router.get('/proxy', async (req, res) => {
   let result;
 
   const timerStarter = timerStart();
-  // Athuga cache
   try {
     result = await getCacheData(`${period}_${type}`);
   } catch (e) {

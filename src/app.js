@@ -16,8 +16,6 @@ const path = dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(join(path, '../public')));
 app.use(express.static(join(path, '../node_modules/leaflet/dist')));
-app.set('views', join(path, '../view'));
-app.set('view engine', 'ejs');
 
 app.use((req, res, next) => {
   res.header(
