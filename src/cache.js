@@ -1,12 +1,10 @@
-// TODO útfæra redis cache
 import redis from 'redis';
 import util from 'util';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-export let getCacheData; // eslint-disable-line import/no-mutable-exports
-export let setCacheData; // eslint-disable-line import/no-mutable-exports
+export let getCacheData;
+export let setCacheData;
 
 const {
   REDIS_URL: redisUrl= 'redis://127.0.0.1:6379/0',
@@ -25,15 +23,15 @@ try {
   const setAsync = util.promisify(client.set).bind(client);
 
   getCacheData = async (key) => {
-    const earthquakes = await getAsync(key);
-    return earthquakes;
+    const earthquakesData = await getAsync(key);
+    return earthquakesData;
   };
 
-  setCacheData = async (key, earthquakes) => {
-    await setAsync(key, earthquakes);
+  setCacheData = async (key, earthquakesData) => {
+    await setAsync(key, earthquakesData);
   };
 } catch (e) {
   console.error('Error setting up redis client, running without cache', e);
-  getCacheData = async (key) => false; // eslint-disable-line no-unused-vars
-  setCacheData = async (key, value) => { }; // eslint-disable-line no-unused-vars
+  getCacheData = async (key) => false;
+  setCacheData = async (key, value) => { };
 }

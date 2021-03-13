@@ -123,11 +123,6 @@ async function overrideLinks() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // TODO
-  // Bæta við virkni til að sækja úr lista
-  // Nota proxy
-  // Hreinsa header og upplýsingar þegar ný gögn eru sótt
-  // Sterkur leikur að refactora úr virkni fyrir event handler í sér fall
 
   map = document.querySelector('.map');
 
@@ -139,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const earthquakes = await fetchEarthquakes('hour', 'all');
 
-  // Fjarlægjum loading skilaboð eftir að við höfum sótt gögn
   removeLoadingFromDOM();
 
   if (!earthquakes) {

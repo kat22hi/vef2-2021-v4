@@ -1,10 +1,8 @@
   
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-
 import express from 'express';
 import dotenv from 'dotenv';
-
 import { router as proxyRouter } from './proxy.js';
 
 dotenv.config();
@@ -21,8 +19,6 @@ app.use(express.static(join(path, '../node_modules/leaflet/dist')));
 app.set('views', join(path, '../view'));
 app.set('view engine', 'ejs');
 
-
-
 app.use((req, res, next) => {
   res.header(
     'Access-Control-Allow-Origin', '*',
@@ -31,12 +27,6 @@ app.use((req, res, next) => {
     'Access-Control-Allow-Methods', 'GET',
   );
   next();
-});
-
-app.get('/', (req, res) => {
-  res.sendFile('index.html', {
-    root: join(path, '..'),
-  });
 });
 
 app.use(proxyRouter);

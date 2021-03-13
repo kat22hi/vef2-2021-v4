@@ -6,9 +6,6 @@ import { timerStart, timerEnd } from './time.js';
 
 export const router = express.Router();
 
-const periods = ['hour', 'day', 'week', 'month'];
-const types = ['significant', '4.5', '2.5', '1.0', 'all'];
-
 router.get('/proxy', async (req, res) => {
 
   const {
@@ -16,7 +13,6 @@ router.get('/proxy', async (req, res) => {
   } = req.query;
 
   const URL = `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/${type}_${period}.geojson`;
-
   let result;
 
   const timerStarter = timerStart();
@@ -53,7 +49,6 @@ router.get('/proxy', async (req, res) => {
     return;
   }
 
-  // TODO setja gögn í cache
   const results = await result.text();
   await setCacheData(`${period}_${type}`, results);
 
