@@ -1,3 +1,4 @@
+  
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,9 +17,29 @@ const app = express();
 const path = dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(join(path, '../public')));
+app.use(express.static(join(path, '../node_modules/leaflet/dist')));
+app.set('views', join(path, '../view'));
+app.set('view engine', 'ejs');
 
-// TODO setja upp proxy þjónustu
-// TODO birta index.html skjal
+
+
+app.use((req, res, next) => {
+  res.header(
+    'Access-Control-Allow-Origin', '*',
+  );
+  res.header(
+    'Access-Control-Allow-Methods', 'GET',
+  );
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.sendFile('index.html', {
+    root: join(path, '..'),
+  });
+});
+
+app.use(proxyRouter);
 
 /**
  * Middleware sem sér um 404 villur.

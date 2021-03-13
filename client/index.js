@@ -1,33 +1,60 @@
 import { fetchEarthquakes } from './lib/earthquakes';
 import { el, element, formatDate } from './lib/utils';
-import { init, createPopup } from './lib/map';
+import { init, createPopup, clearMarkers } from './lib/map';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // TODO
-  // Bæta við virkni til að sækja úr lista
-  // Nota proxy
-  // Hreinsa header og upplýsingar þegar ný gögn eru sótt
-  // Sterkur leikur að refactora úr virkni fyrir event handler í sér fall
+let map;
 
-  const earthquakes = await fetchEarthquakes();
+function addLoadingToDOM() {
+  const loading = document.querySelector('.loading');
+  if (loading.classList.contains('hidden')) {
+    loading.classList.toggle('hidden');
+  }
+}
 
-  // Fjarlægjum loading skilaboð eftir að við höfum sótt gögn
+function removeLoadingFromDOM() {
+  const loading = document.querySelector('.loading');
+  loading.classList.add('hidden');
+}
+
+function addLoadingErrorToDOM() {
   const loading = document.querySelector('.loading');
   const parent = loading.parentNode;
-  parent.removeChild(loading);
 
-  if (!earthquakes) {
-    parent.appendChild(
-      el('p', 'Villa við að sækja gögn'),
-    );
+  parent.appendChild(
+    element('p', { class: 'error' }, null, 'Villa við að sækja gögn'),
+  );
+}
+
+function clearDOM() {
+  clearMarkers();
+  const h1 = document.querySelector('h1');
+  while (h1.firstChild) {
+    h1.removeChild(h1.firstChild);
   }
+  const cache = document.querySelector('.cache');
+  while (cache.firstChild) {
+    cache.removeChild(cache.firstChild);
+  }
+  const earthquakes = document.querySelector('.earthquakes');
+  while (earthquakes.firstChild) {
+    earthquakes.removeChild(earthquakes.firstChild);
+  }
+  const error = document.querySelector('.error');
+  if (error) {
+    error.parentNode.removeChild(error);
+  }
+}
+
+function addEarthquakesToDOM(earthquakes, pageTitle) {
+  const h1 = document.querySelector('h1');
+  const cache = document.querySelector('.cache');
+
+  h1.append(pageTitle);
+  cache.append(`Gögn eru ${earthquakes.info.cached ? '' : 'ekki'} í cache. Fyrirspurn tók ${earthquakes.info.time} sek.`);
 
   const ul = document.querySelector('.earthquakes');
-  const map = document.querySelector('.map');
 
-  init(map);
-
-  earthquakes.forEach((quake) => {
+  earthquakes.data.features.forEach((quake) => {
     const {
       title, mag, time, url,
     } = quake.properties;
@@ -63,4 +90,61 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     ul.appendChild(li);
   });
+}
+
+async function overrideLinks() {
+  const nav = document.querySelector('.nav');
+  const lists = nav.querySelectorAll('.list');
+
+  lists.forEach((list) => {
+    const h2 = list.querySelector('h2');
+    const links = list.querySelectorAll('a');
+
+    links.forEach((link) => {
+      link.addEventListener('click', async (event) => {
+        event.preventDefault();
+        clearDOM();
+        addLoadingToDOM();
+        const url = new URL(event.target.href);
+        const urlParams = url.searchParams;
+        const period = urlParams.has('period') ? urlParams.get('period') : 'hour';
+        const type = urlParams.has('type') ? urlParams.get('type') : 'all';
+
+        const earthquakes = await fetchEarthquakes(period, type);
+        removeLoadingFromDOM();
+        if (!earthquakes) {
+          addLoadingErrorToDOM();
+          return;
+        }
+        addEarthquakesToDOM(earthquakes, `${event.target.innerText}, ${h2.textContent.toLowerCase()}`);
+      });
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // TODO
+  // Bæta við virkni til að sækja úr lista
+  // Nota proxy
+  // Hreinsa header og upplýsingar þegar ný gögn eru sótt
+  // Sterkur leikur að refactora úr virkni fyrir event handler í sér fall
+
+  map = document.querySelector('.map');
+
+  init(map);
+
+  addLoadingToDOM();
+
+  await overrideLinks();
+
+  const earthquakes = await fetchEarthquakes('hour', 'all');
+
+  // Fjarlægjum loading skilaboð eftir að við höfum sótt gögn
+  removeLoadingFromDOM();
+
+  if (!earthquakes) {
+    addLoadingErrorToDOM();
+    return;
+  }
+  addEarthquakesToDOM(earthquakes, 'Allir jarðskjálftar, seinustu klukkustund');
 });
